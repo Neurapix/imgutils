@@ -16,6 +16,11 @@ try:
 except (ImportError, ModuleNotFoundError):
     from typing_extensions import Literal
 
+try:
+    _trapezoid = np.trapezoid
+except AttributeError:
+    _trapezoid = np.trapz
+
 
 def _pos_neg_to_true_score(pos, neg):
     y_true = np.concatenate([np.ones_like(pos), np.zeros_like(neg)])
@@ -88,7 +93,7 @@ def plt_pr_curve(ax, pos, neg, title='PR Curve'):
     y_true, y_score = _pos_neg_to_true_score(pos, neg)
     precision, recall, _ = precision_recall_curve(1 - y_true, 1.0 - y_score)
     disp = PrecisionRecallDisplay(precision=precision, recall=recall)
-    _map = -np.trapz(precision, recall)
+    _map = -_trapezoid(precision, recall)
     disp.plot(ax=ax, name=f'mAP {_map:.3f}')
 
     ax.set_title(title)

@@ -1,6 +1,6 @@
 hbutils>=0.9.0
 pillow
-numpy<2
+numpy
 scikit-learn
 huggingface_hub
 tqdm

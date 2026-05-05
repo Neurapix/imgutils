@@ -165,7 +165,7 @@ def _make_table(limit: Optional[int] = None):
         })
 
     df_record = pd.DataFrame(records)
-    df_record = df_record.replace(np.NaN, False)
+    df_record = df_record.replace(np.nan, False)
     df_record = df_record.sort_values(by=['posts', 'id'], ascending=[False, True])
 
     groupx = []
