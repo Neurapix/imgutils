@@ -4,7 +4,7 @@ numpy
 scikit-learn
 huggingface_hub
 tqdm
-opencv-contrib-python
+opencv-python
 pandas
 scipy
 emoji>=2.5.0,<2.12
