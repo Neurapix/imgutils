@@ -6,8 +6,7 @@ The module offers the following main features:
 
 1. Extraction of NAI metadata from images
 2. Creation of NAI metadata objects
-3. Adding NAI metadata to images
-4. Saving images with NAI metadata
+3. Saving images with NAI metadata
 
 This module is particularly useful for working with AI-generated images and their associated metadata.
 """
@@ -23,7 +22,7 @@ from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
 from ..data import load_image, ImageTyping
-from ..metadata import read_lsb_metadata, write_lsb_metadata, LSBReadError, read_geninfo_parameters, \
+from ..metadata import read_lsb_metadata, LSBReadError, read_geninfo_parameters, \
     read_geninfo_exif, read_geninfo_gif, write_geninfo_exif, write_geninfo_gif
 
 mimetypes.add_type('image/webp', '.webp')
@@ -256,21 +255,6 @@ def get_naimeta_from_image(image: ImageTyping) -> Optional[NAIMetaData]:
         )
 
 
-def add_naimeta_to_image(image: ImageTyping, metadata: NAIMetaData) -> Image.Image:
-    """
-    Add NAI metadata to an image using LSB (Least Significant Bit) encoding.
-
-    :param image: The input image.
-    :type image: ImageTyping
-    :param metadata: The NAIMetadata object to add to the image.
-    :type metadata: NAIMetaData
-    :return: The image with added metadata.
-    :rtype: Image.Image
-    """
-    image = load_image(image, mode=None, force_background=None)
-    return write_lsb_metadata(image, data=metadata.pnginfo)
-
-
 def _save_png_with_naimeta(image: Image.Image, dst_file: Union[str, os.PathLike], metadata: NAIMetaData, **kwargs):
     """
     Save a PNG image with NAI metadata.
@@ -322,17 +306,16 @@ _FN_IMG_SAVE = {
     'image/webp': _save_exif_with_naimeta,
     'image/gif': _save_gif_with_naimeta,
 }
-_LSB_ALLOWED_TYPES = {'image/png', 'image/tiff'}
 
 
 def save_image_with_naimeta(
         image: ImageTyping, dst_file: Union[str, os.PathLike], metadata: NAIMetaData,
-        add_lsb_meta: Union[str, bool] = 'auto', save_metainfo: Union[str, bool] = 'auto', **kwargs) -> Image.Image:
+        save_metainfo: Union[str, bool] = 'auto', **kwargs) -> Image.Image:
     """
     Save an image with NAI metadata.
 
-    This function saves the given image with the provided NAI metadata. It can add LSB metadata
-    and save metainfo based on the image format and user preferences.
+    This function saves the given image with the provided NAI metadata based on the image format
+    and user preferences.
 
     :param image: The input image.
     :type image: ImageTyping
@@ -340,27 +323,14 @@ def save_image_with_naimeta(
     :type dst_file: Union[str, os.PathLike]
     :param metadata: The NAIMetadata object to include in the image.
     :type metadata: NAIMetaData
-    :param add_lsb_meta: Whether to add LSB metadata. Can be 'auto', True, or False.
-    :type add_lsb_meta: Union[str, bool]
     :param save_metainfo: Whether to save metainfo. Can be 'auto', True, or False.
     :type save_metainfo: Union[str, bool]
     :param kwargs: Additional keyword arguments for image saving.
     :return: The saved image.
     :rtype: Image.Image
-    :raises ValueError: If LSB metadata cannot be saved to the specified image format.
     :raises SystemError: If the image format is not supported for saving metainfo.
     """
     mimetype, _ = mimetypes.guess_type(str(dst_file))
-    if add_lsb_meta == 'auto':
-        if mimetype in _LSB_ALLOWED_TYPES:
-            add_lsb_meta = True
-        else:
-            add_lsb_meta = False
-    else:
-        if add_lsb_meta and mimetype not in _LSB_ALLOWED_TYPES:
-            raise ValueError('LSB metadata cannot be saved to lossy image format or RGBA-incompatible format, '
-                             'add_lsb_meta will be disabled. '
-                             f'Only {", ".join(sorted(_LSB_ALLOWED_TYPES))} images supported.')
     if save_metainfo == 'auto':
         if mimetype in _FN_IMG_SAVE:
             save_metainfo = True
@@ -370,12 +340,10 @@ def save_image_with_naimeta(
         if save_metainfo and mimetype not in _FN_IMG_SAVE:
             raise SystemError(f'Not supported to save as a {mimetype!r} type, '
                               f'supported mimetypes are {sorted(_FN_IMG_SAVE.keys())!r}.')
-    if not add_lsb_meta and not save_metainfo:
-        warnings.warn(f'Both LSB meta and pnginfo is disabled, no metadata will be saved to {dst_file!r}.')
+    if not save_metainfo:
+        warnings.warn(f'Metadata saving is disabled, no metadata will be saved to {dst_file!r}.')
 
     image = load_image(image, mode=None, force_background=None)
-    if add_lsb_meta:
-        image = add_naimeta_to_image(image, metadata=metadata)
     if save_metainfo:
         _FN_IMG_SAVE[mimetype](image, dst_file, metadata, **kwargs)
     else:
