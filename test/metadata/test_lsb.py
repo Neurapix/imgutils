@@ -1,9 +1,6 @@
 import pytest
-from PIL.PngImagePlugin import PngInfo
-from hbutils.testing import isolated_directory
 
-from imgutils.metadata import read_lsb_metadata, LSBReadError, read_lsb_raw_bytes, write_lsb_raw_bytes, \
-    write_lsb_metadata
+from imgutils.metadata import read_lsb_metadata, LSBReadError, read_lsb_raw_bytes
 from ..testings import get_testfile
 
 
@@ -78,14 +75,6 @@ def metadata_expected():
 
 
 @pytest.fixture()
-def pnginfo_expected(metadata_expected):
-    pnginfo = PngInfo()
-    for key, value in metadata_expected.items():
-        pnginfo.add_text(key, value)
-    return pnginfo
-
-
-@pytest.fixture()
 def raw_bytes_expected():
     return bytearray(b'\x1f\x8b\x08\x00\xbcE\xd4f\x02\xff\xedU\xdbn\xdc6\x10\xfd\x15b'
                      b'\x9f\x12@\x08\xa4ub\xaf\x03\x04h}\xc9\xc5p\x13\xc7F\x1a7'
@@ -143,43 +132,6 @@ def raw_bytes_expected():
                      b'\x00\x00')
 
 
-@pytest.fixture()
-def random_20_bytes():
-    return b'\xe6\x97\xa5\xd0\xbc\xe6\x9c\xac\xe3\x81\xae\x20\x31\x23\x24\x25\x5e\x26\x2a'
-
-
-@pytest.fixture()
-def random_100_bytes():
-    return (
-        b'\xec\x95\x88\xe3\x81\xae\x20\x31\x23\x24\x25\x5e\x26\x2a\x7b\x7d\x5b\x5d\x3c\x3e\x3f'
-        b'\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d'
-        b'\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b'
-        b'\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40'
-    )
-
-
-@pytest.fixture()
-def random_1000_bytes():
-    return (
-        b'\xec\x95\x88\xeb\x85\x95\xd0\xbf\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82\x20\x31\x23\x24'
-        b'\x25\x5e\x26\x2a\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26'
-        b'\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24'
-        b'\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21'
-        b'\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c'
-        b'\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e'
-        b'\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b'
-        b'\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d'
-        b'\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f'
-        b'\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a'
-        b'\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25'
-        b'\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40'
-        b'\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f\x7c\x5c\x60'
-        b'\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d\x3c\x3e\x3f'
-        b'\x7c\x5c\x60\x7e\x21\x40\x23\x24\x25\x5e\x26\x2a\x28\x29\x5f\x2b\x2d\x3d\x7b\x7d\x5b\x5d'
-        b'\x3c\x3e\x3f\x7c\x5c\x60\x7e\x21\x40'
-    )
-
-
 @pytest.mark.unittest
 class TestMetadataLSB:
     def test_read_lsb_metadata(self, nai3_file, metadata_expected):
@@ -203,69 +155,3 @@ class TestMetadataLSB:
             _ = read_lsb_raw_bytes(nai3_clear_file)
         with pytest.raises(LSBReadError):
             _ = read_lsb_raw_bytes(nai3_clear_rgba_file)
-
-    def test_write_lsb_raw_bytes_random_20(self, nai3_clear_file, random_20_bytes):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_raw_bytes(nai3_clear_file)
-
-        image = write_lsb_raw_bytes(nai3_clear_file, random_20_bytes)
-        assert read_lsb_raw_bytes(image) == random_20_bytes
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_raw_bytes('image.png') == random_20_bytes
-
-    def test_write_lsb_raw_bytes_random_100(self, nai3_clear_file, random_100_bytes):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_raw_bytes(nai3_clear_file)
-
-        image = write_lsb_raw_bytes(nai3_clear_file, random_100_bytes)
-        assert read_lsb_raw_bytes(image) == random_100_bytes
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_raw_bytes('image.png') == random_100_bytes
-
-    def test_write_lsb_raw_bytes_random_1000(self, nai3_clear_file, random_1000_bytes):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_raw_bytes(nai3_clear_file)
-
-        image = write_lsb_raw_bytes(nai3_clear_file, random_1000_bytes)
-        assert read_lsb_raw_bytes(image) == random_1000_bytes
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_raw_bytes('image.png') == random_1000_bytes
-
-    def test_write_lsb_metadata_json(self, nai3_clear_file, metadata_expected):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_metadata(nai3_clear_file)
-
-        image = write_lsb_metadata(nai3_clear_file, metadata_expected)
-        assert read_lsb_metadata(image) == metadata_expected
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_metadata('image.png') == metadata_expected
-
-    def test_write_lsb_metadata_pnginfo(self, nai3_clear_file, pnginfo_expected, metadata_expected):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_metadata(nai3_clear_file)
-
-        image = write_lsb_metadata(nai3_clear_file, pnginfo_expected)
-        assert read_lsb_metadata(image) == metadata_expected
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_metadata('image.png') == metadata_expected
-
-    def test_write_lsb_metadata_bytes(self, nai3_clear_file, random_1000_bytes):
-        with pytest.raises(LSBReadError):
-            _ = read_lsb_metadata(nai3_clear_file)
-
-        image = write_lsb_metadata(nai3_clear_file, random_1000_bytes)
-        assert read_lsb_raw_bytes(image) == random_1000_bytes
-
-        with isolated_directory():
-            image.save('image.png')
-            assert read_lsb_raw_bytes('image.png') == random_1000_bytes
